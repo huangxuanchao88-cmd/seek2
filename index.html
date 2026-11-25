@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>安全制度修订助手</title>
+<style>
+:root{
+  --bg:#f3f5f9;--surface:#fff;--surface-2:#f8fafc;
+  --text:#1c2534;--text-2:#5a6678;--text-3:#93a0b3;
+  --border:#e7ebf2;--border-2:#dde3ed;
+  --primary:#2459cc;--primary-d:#1b45a0;--primary-l:#eaf1fe;
+  --red:#d13b3b;--red-l:#fdecec;--green:#1a9b62;--green-l:#e7f6ee;
+  --orange:#d97a12;--orange-l:#fdf2e3;--purple:#7648c6;--purple-l:#f1ebfd;
+  --shadow:0 1px 2px rgba(20,35,65,.05),0 3px 12px rgba(20,35,65,.04);
+  --shadow-lg:0 16px 44px rgba(20,35,65,.18);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);font-size:13.5px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.app{display:flex;min-height:100vh}
+.sidebar{width:212px;flex-shrink:0;background:#111c30;color:#c7d2e5;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.brand{padding:18px 16px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.07)}
+.brand .logo{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#2f7bff,#1f5fd8);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.brand .logo svg{width:19px;height:19px}
+.brand h1{font-size:14px;color:#fff;font-weight:650;line-height:1.25}
+.brand .sub{font-size:9.5px;color:#7b8aa8;letter-spacing:.5px;margin-top:1px}
+.nav{padding:12px 10px;flex:1;overflow-y:auto}
+.nav-label{font-size:10px;color:#5f6f8d;letter-spacing:1px;padding:7px 9px;margin-top:4px;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:7px;cursor:pointer;font-size:13px;color:#aab7cd;margin-bottom:2px;transition:.15s}
+.nav-item:hover{background:rgba(255,255,255,.05);color:#e6edf9}
+.nav-item.active{background:linear-gradient(90deg,#1f5fd8,#2568e6);color:#fff;font-weight:600;box-shadow:0 3px 12px rgba(31,95,216,.3)}
+.nav-item .ic{width:17px;height:17px;flex-shrink:0}
+.nav-item .badge{margin-left:auto;background:#d13b3b;color:#fff;font-size:9.5px;min-width:17px;height:17px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;font-weight:700}
+.sidebar-foot{padding:12px 15px;border-top:1px solid rgba(255,255,255,.07);font-size:10.5px;color:#64748f}
+.sidebar-foot .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#2fbf7a;margin-right:6px}
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{height:56px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 22px;gap:14px;position:sticky;top:0;z-index:20}
+.crumb{font-size:12px;color:var(--text-3)}
+.crumb b{color:var(--text);font-weight:600}
+.topbar .spacer{flex:1}
+.top-user{display:flex;align-items:center;gap:8px;padding-left:14px;border-left:1px solid var(--border)}
+.avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#7a4fd0,#5b37ad);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.top-user .nm{font-size:11.5px;font-weight:600;line-height:1.2}
+.top-user .rl{font-size:10px;color:var(--text-3)}
+.content{padding:18px 22px 46px;max-width:1500px;width:100%;margin:0 auto}
+.page{display:none;animation:fade .25s ease}
+.page.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.page-head{margin-bottom:15px;display:flex;align-items:center;gap:12px}
+.page-head .ic-box{width:38px;height:38px;border-radius:10px;background:var(--primary-l);color:var(--primary);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.page-head .ic-box svg{width:20px;height:20px}
+.page-head h2{font-size:18px;font-weight:720;letter-spacing:-.3px}
+.page-head p{color:var(--text-2);font-size:12px;margin-top:1px}
+.page-head .head-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:7px;border:1px solid var(--border-2);background:var(--surface);color:var(--text);font-size:12.5px;font-weight:600;cursor:pointer;transition:.15s;font-family:inherit}
+.btn:hover{border-color:#c3ccda;background:var(--surface-2)}
+.btn svg{width:14px;height:14px}
+.btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+.btn.primary:hover{background:var(--primary-d)}
+.btn.sm{padding:5px 9px;font-size:11.5px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:11px;box-shadow:var(--shadow)}
+.grid{display:grid;gap:13px}
+.g4{grid-template-columns:repeat(4,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:repeat(2,1fr)}
+@media(max-width:1100px){.g4{grid-template-columns:repeat(2,1fr)}.g3,.g2{grid-template-columns:1fr}}
+.stat{padding:14px 16px}
+.stat .top{display:flex;align-items:center;justify-content:space-between}
+.stat .lbl{font-size:11.5px;color:var(--text-2);font-weight:500}
+.stat .ic{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center}
+.stat .ic svg{width:16px;height:16px}
+.stat .num{font-size:26px;font-weight:750;letter-spacing:-.8px;margin:7px 0 1px;line-height:1}
+.stat .foot{font-size:10.5px;color:var(--text-3)}
+.c-blue .ic{background:var(--primary-l);color:var(--primary)}
+.c-green .ic{background:var(--green-l);color:var(--green)}
+.c-red .ic{background:var(--red-l);color:var(--red)}
+.c-orange .ic{background:var(--orange-l);color:var(--orange)}
+.c-purple .ic{background:var(--purple-l);color:var(--purple)}
+.panel{padding:16px 18px}
+.panel-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.panel-h h3{font-size:13.5px;font-weight:700}
+.panel-h .more{font-size:11.5px;color:var(--primary);cursor:pointer;font-weight:600}
+.toolbar{display:flex;gap:9px;align-items:center;margin-bottom:13px;flex-wrap:wrap}
+.search{position:relative;flex:1;min-width:200px;max-width:330px}
+.search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--text-3)}
+.search input{width:100%;padding:8px 11px 8px 33px;border:1px solid var(--border-2);border-radius:7px;font-size:12.5px;font-family:inherit;background:var(--surface);color:var(--text);outline:none}
+.search input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-l)}
+.filter-tabs{display:flex;gap:3px;background:#eef1f6;padding:3px;border-radius:7px}
+.filter-tabs button{border:none;background:transparent;padding:5px 11px;border-radius:5px;font-size:11.5px;color:var(--text-2);cursor:pointer;font-weight:600;font-family:inherit}
+.filter-tabs button.active{background:var(--surface);color:var(--primary);box-shadow:0 1px 3px rgba(20,35,65,.1)}
+.sel{padding:7px 10px;border:1px solid var(--border-2);border-radius:7px;font-size:12.5px;font-family:inherit;color:var(--text);background:var(--surface);outline:none;cursor:pointer}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:10px;background:var(--surface)}
+table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:700px}
+thead th{background:var(--surface-2);text-align:left;padding:10px 13px;font-size:11px;color:var(--text-2);font-weight:650;border-bottom:1px solid var(--border);white-space:nowrap}
+tbody td{padding:10px 13px;border-bottom:1px solid var(--border);vertical-align:middle}
+tbody tr{cursor:pointer;transition:.12s}
+tbody tr:hover{background:#f8fafd}
+tbody tr:last-child td{border-bottom:none}
+.td-title{font-weight:600;color:var(--text);margin-bottom:1px}
+.td-sub{font-size:10.5px;color:var(--text-3)}
+.tag{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:5px;font-size:10.5px;font-weight:650;white-space:nowrap}
+.tag .d{width:6px;height:6px;border-radius:50%}
+.t-green{background:var(--green-l);color:var(--green)}.t-green .d{background:var(--green)}
+.t-red{background:var(--red-l);color:var(--red)}.t-red .d{background:var(--red)}
+.t-orange{background:var(--orange-l);color:var(--orange)}.t-orange .d{background:var(--orange)}
+.t-blue{background:var(--primary-l);color:var(--primary)}.t-blue .d{background:var(--primary)}
+.t-purple{background:var(--purple-l);color:var(--purple)}.t-purple .d{background:var(--purple)}
+.t-gray{background:#eef1f5;color:#64748b}.t-gray .d{background:#94a3b8}
+.link-ref{color:var(--primary);font-size:11px;cursor:pointer;font-weight:600}
+.risk{font-size:10px;font-weight:750;padding:2px 7px;border-radius:4px}
+.risk.高{background:var(--red-l);color:var(--red)}
+.risk.中{background:var(--orange-l);color:var(--orange)}
+.risk.低{background:var(--green-l);color:var(--green)}
+.reader{display:grid;grid-template-columns:190px 1fr;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--surface)}
+.reader-toc{border-right:1px solid var(--border);background:var(--surface-2);padding:12px 10px;max-height:64vh;overflow-y:auto}
+.reader-toc h4{font-size:10.5px;color:var(--text-3);letter-spacing:.6px;margin-bottom:8px;font-weight:700}
+.toc-item{padding:6px 9px;font-size:11.5px;color:var(--text-2);border-radius:6px;cursor:pointer;margin-bottom:1px;line-height:1.4}
+.toc-item:hover,.toc-item.active{background:var(--primary-l);color:var(--primary);font-weight:600}
+.reader-body{padding:22px 30px 40px;max-height:64vh;overflow-y:auto}
+.doc-head{text-align:center;padding-bottom:16px;border-bottom:2px solid var(--text);margin-bottom:18px}
+.doc-head h2{font-size:19px;font-weight:750;letter-spacing:1px}
+.doc-head .meta{font-size:11px;color:var(--text-3);margin-top:6px}
+.doc-chapter{font-size:15px;font-weight:750;margin:20px 0 10px;padding-left:9px;border-left:3px solid var(--primary)}
+.doc-article{margin-bottom:11px;font-size:12.5px;line-height:1.85;text-indent:2em;color:var(--text)}
+.doc-article b{font-weight:700}
+.reader-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--surface-2);flex-wrap:wrap}
+.reader-bar .title{font-size:12.5px;font-weight:700}
+.reader-bar .spacer{flex:1}
+.upload-zone{border:1.5px dashed var(--border-2);border-radius:10px;padding:18px;text-align:center;background:var(--surface-2);cursor:pointer;transition:.16s}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--primary);background:var(--primary-l)}
+.upload-zone svg{width:28px;height:28px;color:var(--primary);margin-bottom:6px}
+.upload-zone h4{font-size:12.5px;font-weight:650;margin-bottom:3px}
+.upload-zone p{font-size:11px;color:var(--text-3)}
+.upload-zone input{display:none}
+.term-card{padding:12px 14px;display:flex;gap:11px;align-items:flex-start}
+.term-card .ti{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.term-card .ti svg{width:15px;height:15px}
+.term-card h4{font-size:12px;font-weight:700;margin-bottom:2px}
+.term-card p{font-size:11.5px;color:var(--text-2)}
+.timeline{position:relative;padding-left:6px}
+.timeline::before{content:"";position:absolute;left:13px;top:6px;bottom:6px;width:2px;background:var(--border)}
+.tl{display:flex;gap:12px;padding-bottom:15px;position:relative}
+.tl:last-child{padding-bottom:0}
+.tl .dot{width:14px;height:14px;border-radius:50%;background:var(--surface);border:3px solid var(--primary);flex-shrink:0;margin-top:2px;z-index:1}
+.tl.red .dot{border-color:var(--red)}.tl.green .dot{border-color:var(--green)}.tl.orange .dot{border-color:var(--orange)}
+.tl .date{font-size:10.5px;color:var(--text-3);font-weight:600;width:74px;flex-shrink:0;padding-top:1px}
+.tl .body b{font-size:12px;font-weight:650;display:block}
+.tl .body p{font-size:11.5px;color:var(--text-2)}
+.tl .body .src{font-size:10.5px;color:var(--primary);margin-top:3px;font-weight:600}
+.term-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px}
+.term-badge.需修改{background:var(--red-l);color:var(--red)}
+.term-badge.需新增{background:var(--orange-l);color:var(--orange)}
+.term-badge.建议核实{background:var(--purple-l);color:var(--purple)}
+.term-badge.保留{background:var(--green-l);color:var(--green)}
+
+/* Chat */
+.chat{display:flex;flex-direction:column;height:560px}
+.chat-msgs{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:12px}
+.chat-msg{max-width:82%;display:flex;gap:9px}
+.chat-msg.user{flex-direction:row-reverse;align-self:flex-end}
+.chat-msg .bub{padding:10px 13px;border-radius:11px;font-size:12.5px;line-height:1.7}
+.chat-msg.bot .bub{background:var(--surface-2);border:1px solid var(--border)}
+.chat-msg.user .bub{background:var(--primary);color:#fff;border:none}
+.chat-msg .av{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.chat-msg.bot .av{background:var(--primary-l);color:var(--primary)}
+.chat-msg.user .av{background:var(--purple);color:#fff}
+.chat-msg .bub .src{display:block;margin-top:6px;font-size:10.5px;opacity:.75;border-top:1px dashed rgba(0,0,0,.1);padding-top:6px}
+.chat-msg.user .bub .src{border-color:rgba(255,255,255,.3)}
+.chat-input{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--border);background:var(--surface-2)}
+.chat-input input{flex:1;padding:9px 12px;border:1px solid var(--border-2);border-radius:7px;font-size:12.5px;font-family:inherit;outline:none}
+.chat-input input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-l)}
+.chat-suggest{display:flex;gap:6px;flex-wrap:wrap;padding:0 16px 10px;background:var(--surface-2);border-top:1px solid var(--border)}
+.chip{font-size:11px;padding:4px 10px;border-radius:13px;border:1px solid var(--border-2);background:var(--surface);color:var(--text-2);cursor:pointer}
+.chip:hover{border-color:var(--primary);color:var(--primary)}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(15,25,45,.5);z-index:50;display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(2px)}
+.modal-overlay.show{display:flex}
+.modal{background:var(--surface);border-radius:12px;box-shadow:var(--shadow-lg);width:100%;max-width:820px;max-height:90vh;display:flex;flex-direction:column;animation:pop .2s ease}
+.modal.wide{max-width:1000px}
+@keyframes pop{from{opacity:0;transform:scale(.97) translateY(6px)}to{opacity:1;transform:none}}
+.modal-h{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:12px}
+.modal-h .grow{flex:1}
+.modal-h h3{font-size:15px;font-weight:700}
+.modal-h .close{cursor:pointer;color:var(--text-3);width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.modal-h .close:hover{background:var(--bg)}
+.modal-h .close svg{width:17px;height:17px}
+.modal-b{padding:18px 20px;overflow-y:auto;flex:1}
+.modal-f{padding:12px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
+.info-row{display:flex;padding:7px 0;border-bottom:1px dashed var(--border);font-size:12.5px}
+.info-row:last-child{border-bottom:none}
+.info-row .k{width:88px;color:var(--text-3);flex-shrink:0}
+.info-row .v{flex:1}
+.doc-note{background:var(--orange-l);border:1px solid #f4dcb8;border-radius:7px;padding:9px 12px;font-size:11.5px;color:#9a5a08;margin:12px 0;line-height:1.6}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(16px);background:#111c30;color:#fff;padding:10px 17px;border-radius:8px;font-size:12.5px;font-weight:600;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:.25s;z-index:100;display:flex;align-items:center;gap:8px;max-width:80vw}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast svg{width:15px;height:15px;color:#4ade80;flex-shrink:0}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand">
+    <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></div>
+    <div><h1>安全制度修订助手</h1><div class="sub">SAFETY POLICY COPILOT</div></div>
+  </div>
+  <nav class="nav">
+    <div class="nav-label">概览</div>
+    <div class="nav-item active" data-page="dashboard"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>工作台</div>
+    <div class="nav-label">知识库</div>
+    <div class="nav-item" data-page="regulations"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>法规标准库</div>
+    <div class="nav-item" data-page="policies"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h6"/></svg>企业制度库 <span class="badge" id="navPolicyBadge">6</span></div>
+    <div class="nav-label">修订工作流</div>
+    <div class="nav-item" data-page="revision"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>修订建议 <span class="badge" id="navRevBadge">17</span></div>
+    <div class="nav-item" data-page="consistency"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="12" cy="18" r="3"/><path d="M8.2 8.2l2.4 7.6M15.8 8.2l-2.4 7.6M9 6h6"/></svg>一致性校验</div>
+    <div class="nav-label">动态</div>
+    <div class="nav-item" data-page="updates"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9 9 0 0 1 9 9 9 9 0 0 1-9 9"/><path d="M12 7v5l3 2M21 3v5h-5"/></svg>更新动态</div>
+  </nav>
+  <div class="sidebar-foot"><span class="dot"></span>法规库同步于 2026-11-20</div>
+</aside>
+
+<main class="main">
+  <header class="topbar">
+    <div class="crumb">华安化工集团 / <b id="crumbTitle">工作台</b></div>
+    <div class="spacer"></div>
+    <div class="top-user"><div class="avatar">安</div><div><div class="nm">安全管理部</div><div class="rl">系统管理员</div></div></div>
+  </header>
+  <div class="content">
+
+  <!-- DASHBOARD -->
+  <section class="page active" id="page-dashboard">
+    <div class="page-head">
+      <div class="ic-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
+      <div><h2>工作台</h2><p>法规动态与企业制度合规概览 · 数据截至 2026-11-25</p></div>
+    </div>
+    <div class="grid g4" style="margin-bottom:13px">
+      <div class="card stat c-blue"><div class="top"><span class="lbl">现行法规标准</span><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5"/></svg></span></div><div class="num" id="statReg">6</div><div class="foot">2025年以来 · 默认展示摘要</div></div>
+      <div class="card stat c-purple"><div class="top"><span class="lbl">企业制度</span><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></span></div><div class="num" id="statPolicy">6</div><div class="foot">其中 4 份为完整制度文档</div></div>
+      <div class="card stat c-orange"><div class="top"><span class="lbl">待处理修订</span><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5"/></svg></span></div><div class="num" id="statPending">17</div><div class="foot">条款级修订建议</div></div>
+      <div class="card stat c-green"><div class="top"><span class="lbl">已采纳</span><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg></span></div><div class="num" id="statAdopted">0</div><div class="foot">修订建议处理进度</div></div>
+    </div>
+    <div class="grid" style="grid-template-columns:1.6fr 1fr">
+      <div class="card chat">
+        <div class="reader-bar" style="border-bottom:1px solid var(--border);border-radius:11px 11px 0 0"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5 8.5 8.5 0 0 1-8.5-8.5 8.5 8.5 0 0 1 8.5-8.5 8.5 8.5 0 0 1 8.5 8.5z"/><path d="M8 10h8M8 13h5"/></svg><span class="title">制度修订智能问答</span><span class="spacer"></span><span style="font-size:10.5px;color:var(--text-3)">基于法规库与制度库本地检索</span></div>
+        <div class="chat-msgs" id="chatMsgs"></div>
+        <div class="chat-suggest" id="chatSuggest"></div>
+        <div class="chat-input">
+          <input id="chatInput" placeholder="输入问题，例如：环境保护法废止后，哪些制度需要修订？" onkeydown="if(event.key==='Enter')sendChat()">
+          <button class="btn primary" onclick="sendChat()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg>发送</button>
+        </div>
+      </div>
+      <div class="card panel">
+        <div class="panel-h"><h3>近期更新动态</h3><span class="more" onclick="go('updates')">全部动态 →</span></div>
+        <div class="timeline" id="dashTimeline"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REGULATIONS -->
+  <section class="page" id="page-regulations">
+    <div class="page-head">
+      <div class="ic-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+      <div><h2>法规标准库</h2><p>自动检索仅收录 2025 年以来的法规标准，默认展示摘要；上传文件后自动覆盖为原文</p></div>
+      <div class="head-actions"><button class="btn" onclick="toast('自动检索完成：本次检索 2025 年以来文件，共 6 部')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8"/></svg>自动检索</button></div>
+    </div>
+    <div class="toolbar">
+      <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg><input id="regSearch" placeholder="搜索法规名称…" oninput="renderRegs()"></div>
+      <select class="sel" id="regDomain" onchange="renderRegs()"><option value="">全部领域</option><option>通用安全生产</option><option>危化/工贸</option><option>生态环境</option></select>
+      <div class="filter-tabs"><button class="active" data-f="" onclick="setRegFilter(this,'')">全部</button><button data-f="全文" onclick="setRegFilter(this,'全文')">已上传全文</button><button data-f="摘要" onclick="setRegFilter(this,'摘要')">仅摘要</button></div>
+    </div>
+    <div class="tbl-wrap"><table><thead><tr><th style="width:30%">法规 / 标准名称</th><th>领域</th><th>层级</th><th>施行日期</th><th>内容状态</th><th>操作</th></tr></thead><tbody id="regBody"></tbody></table></div>
+    <div style="margin-top:8px;color:var(--text-3);font-size:11px" id="regCount"></div>
+  </section>
+
+  <!-- POLICIES -->
+  <section class="page" id="page-policies">
+    <div class="page-head">
+      <div class="ic-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h6"/></svg></div>
+      <div><h2>企业制度库</h2><p>上传企业制度文件，在线阅读全文，查看编制依据与法规关联</p></div>
+      <div class="head-actions"><button class="btn primary" onclick="document.getElementById('polFileInput').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16V4M7 9l5-5 5 5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>上传制度文件</button></div>
+    </div>
+    <div class="upload-zone" id="polUploadZone" onclick="document.getElementById('polFileInput').click()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 16V4M7 9l5-5 5 5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+      <h4>点击或拖拽上传制度文件</h4>
+      <p>支持 .txt / .md / .html，上传后可在线阅读与入库</p>
+      <input type="file" id="polFileInput" multiple accept=".txt,.md,.html,.htm" onchange="handlePolicyFiles(this.files)">
+    </div>
+    <div class="toolbar" style="margin-top:13px">
+      <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg><input id="polSearch" placeholder="搜索制度名称…" oninput="renderPolicies()"></div>
+      <div class="filter-tabs"><button class="active" data-st="" onclick="setPolStatus(this,'')">全部</button><button data-st="需修订" onclick="setPolStatus(this,'需修订')">需修订</button><button data-st="合规" onclick="setPolStatus(this,'合规')">合规</button></div>
+    </div>
+    <div class="tbl-wrap"><table><thead><tr><th style="width:26%">制度名称</th><th>来源</th><th>版本</th><th>状态</th><th>编制依据</th><th>操作</th></tr></thead><tbody id="polBody"></tbody></table></div>
+  </section>
+
+  <!-- REVISION (merged table) -->
+  <section class="page" id="page-revision">
+    <div class="page-head">
+      <div class="ic-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></div>
+      <div><h2>修订建议</h2><p>条款级修订建议汇总表，逐条给出修改内容、依据与备注，可标记是否采纳</p></div>
+    </div>
+    <div class="toolbar">
+      <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg><input id="revSearch" placeholder="搜索原文、建议或依据…" oninput="renderRevision()"></div>
+      <select class="sel" id="revPolicy" onchange="renderRevision()"><option value="">全部制度</option></select>
+      <div class="filter-tabs"><button class="active" data-a="" onclick="setRevFilter(this,'')">全部</button><button data-a="未采纳" onclick="setRevFilter(this,'未采纳')">未采纳</button><button data-a="已采纳" onclick="setRevFilter(this,'已采纳')">已采纳</button><button data-a="已忽略" onclick="setRevFilter(this,'已忽略')">已忽略</button></div>
+    </div>
+    <div class="tbl-wrap"><table><thead><tr>
+      <th style="width:7%">制度</th><th style="width:24%">原文</th><th style="width:26%">建议修改</th><th style="width:22%">依据</th><th style="width:13%">备注</th><th style="width:8%">是否采纳</th>
+    </tr></thead><tbody id="revBody"></tbody></table></div>
+    <div style="margin-top:8px;color:var(--text-3);font-size:11px" id="revCount"></div>
+  </section>
+
+  <!-- CONSISTENCY -->
+  <section class="page" id="page-consistency">
+    <div class="page-head">
+      <div class="ic-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="12" cy="18" r="3"/><path d="M8.2 8.2l2.4 7.6M15.8 8.2l-2.4 7.6M9 6h6"/></svg></div>
+      <div><h2>一致性校验</h2><p>解决"一个制度改动、关联制度被忽略"的问题，确保制度体系整体协调</p></div>
+    </div>
+    <div class="card panel" style="margin-bottom:12px">
+      <div class="panel-h"><h3>变更场景：公司组织架构调整</h3><span class="tag t-purple"><span class="d"></span>联动检查</span></div>
+      <p style="font-size:12px;color:var(--text-2);margin-bottom:14px">2026 年公司撤销"安全环保部"，分设"安全管理部"与"环境管理部"。系统自动扫描制度中的机构名称引用，定位需联动修改的位置。</p>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+        <div style="padding:10px 12px;border-radius:8px;border:1.5px solid var(--purple);background:var(--purple-l);min-width:140px"><div style="font-size:11.5px;font-weight:700">变更源 · 安全环保部 → 分设</div><div style="font-size:10.5px;color:var(--text-2);margin-top:4px">2026 组织架构调整</div></div>
+        <span style="color:var(--text-3);font-size:16px">→</span>
+        <div style="display:flex;flex-direction:column;gap:6px;flex:1;min-width:200px" id="consFlow"></div>
+      </div>
+    </div>
+    <div class="grid g2">
+      <div class="card panel">
+        <div class="panel-h"><h3>受影响制度明细</h3><span class="more" style="color:var(--red)">6 项制度 · 23 处引用</span></div>
+        <div style="display:flex;flex-direction:column;gap:8px" id="consDetail"></div>
+      </div>
+      <div class="card panel">
+        <div class="panel-h"><h3>其他一致性规则</h3></div>
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <div class="term-card"><div class="ti" style="background:var(--red-l);color:var(--red)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></div><div><h4>废止法规引用一致性</h4><p>3 项制度仍引用已废止的《环境保护法》等。</p></div></div>
+          <div class="term-card"><div class="ti" style="background:var(--orange-l);color:var(--orange)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h12"/></svg></div><div><h4>术语表述一致性</h4><p>"重点水污染物排放单位"应统一更新为"排污许可重点管理单位"。</p></div></div>
+          <div class="term-card"><div class="ti" style="background:var(--green-l);color:var(--green)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg></div><div><h4>责任人表述一致性</h4><p>已与《安全生产法》"全员安全生产责任制"对齐。</p></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- UPDATES -->
+  <section class="page" id="page-updates">
+    <div class="page-head">
+      <div class="ic-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9 9 0 0 1 9 9 9 9 0 0 1-9 9"/><path d="M12 7v5l3 2M21 3v5h-5"/></svg></div>
+      <div><h2>更新动态</h2><p>法规发布、废止、修订记录及对企业制度的影响</p></div>
+    </div>
+    <div class="grid g2" style="grid-template-columns:1.3fr 1fr">
+      <div class="card panel">
+        <div class="panel-h"><h3>法规动态时间线</h3><span class="more">近 12 个月</span></div>
+        <div class="timeline" id="fullTimeline"></div>
+      </div>
+      <div class="card panel">
+        <div class="panel-h"><h3>同步与清理记录</h3></div>
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <div class="term-card"><div class="ti" style="background:var(--primary-l);color:var(--primary)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8"/></svg></div><div><h4>2026-11-20 · 例行同步</h4><p>新增 3 项强制性行业标准入库。</p></div></div>
+          <div class="term-card"><div class="ti" style="background:var(--red-l);color:var(--red)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6l-1 14H6L5 6"/></svg></div><div><h4>2026-08-15 · 批量废止</h4><p>10 部法律废止，标记 3 项制度编制依据失效。</p></div></div>
+          <div class="term-card"><div class="ti" style="background:var(--green-l);color:var(--green)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg></div><div><h4>2026-05-01 · 新增入库</h4><p>《危险化学品安全法》入库并标记现行。</p></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  </div>
+</main>
+</div>
+
+<div class="modal-overlay" id="overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modalBox">
+    <div class="modal-h">
+      <div class="grow"><h3 id="modalTitle">详情</h3><div style="font-size:11px;color:var(--text-3);margin-top:2px" id="modalSub"></div></div>
+      <div class="close" onclick="closeModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></div>
+    </div>
+    <div class="modal-b" id="modalBody"></div>
+    <div class="modal-f" id="modalFoot"></div>
+  </div>
+</div>
+<div class="toast" id="toast"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><span id="toastMsg"></span></div>
+
+<script>
+/* ============ 法规库（2025年以来，默认摘要 + 可上传覆盖） ============ */
+const REGULATIONS=[
+ {id:'r1',name:'中华人民共和国生态环境法典',layer:'法律',domain:'生态环境',date:'2026-08-15施行',note:'主席令第70号 · 5编1242条',summary:'我国第二部以"法典"命名的法律，共5编1242条，涵盖污染防治、生态保护、绿色低碳发展等。自2026-08-15施行之日起，《环境保护法》等10部法律同时废止。',uploaded:false,text:null},
+ {id:'r2',name:'中华人民共和国危险化学品安全法',layer:'法律',domain:'危化/工贸',date:'2026-05-01施行',note:'10章127条 · 危化领域首部专门法律',summary:'危化品安全领域首部专门性、基础性法律，共10章127条，明确全员安全生产责任制、双重预防机制、安全包保责任等制度，危化管理由行政法规升格为国家法律。',uploaded:false,text:null},
+ {id:'r3',name:'生态环境监测条例',layer:'行政法规',domain:'生态环境',date:'2026-01-01施行',note:'国务院令第820号',summary:'规范生态环境监测活动，强化监测机构备案管理与数据质量监管，为生态环境管理与决策提供数据支撑。',uploaded:false,text:null},
+ {id:'r4',name:'化工和危险化学品生产经营企业重大生产安全事故隐患判定准则 AQ 3067—2026',layer:'行业标准',domain:'危化/工贸',date:'2026-09-30实施',note:'强制性标准 · 53项判定情形',summary:'由规范性文件上升为强制性行业标准，从重点人员、设计规划、工艺技术、设备设施等环节系统梳理53项重大隐患判定情形。',uploaded:false,text:null},
+ {id:'r5',name:'危险化学品重大危险源安全包保责任管理要求 AQ 3072—2026',layer:'行业标准',domain:'危化/工贸',date:'2026-09-30实施',note:'强制性标准 · 三类人员包保',summary:'规定重大危险源企业主要负责人、技术负责人、操作负责人三类重点人员的包保责任体系与隐患排查任务。',uploaded:false,text:null},
+ {id:'r6',name:'化工企业设备检修作业安全规范 AQ 3026—2026',layer:'行业标准',domain:'危化/工贸',date:'2026-09-30实施',note:'强制性标准 · 替代2008版',summary:'在2008版基础上修订，突出待检修设备交出、检修作业过程、检修后验收交付等关键环节。',uploaded:false,text:null}
+];
+
+/* ============ 企业制度 ============ */
+const DOCS={
+ p1:{title:'环境保护管理制度',version:'V3.2',dept:'环境管理部',status:'需修订',basis:['环境保护法(已废止)','大气污染防治法(已废止)','水污染防治法(已废止)'],chapters:[
+  {h:'第一章 总则',arts:[['第一条','为保护和改善环境，防治污染和其他公害，根据《中华人民共和国环境保护法》《中华人民共和国大气污染防治法》《中华人民共和国水污染防治法》，制定本制度。'],['第二条','本制度适用于公司生产区、办公区及所属单位的环境保护管理。'],['第三条','环境保护坚持预防为主、防治结合、综合治理的原则。']]},
+  {h:'第二章 组织与职责',arts:[['第五条','安全环保部为公司环境保护工作的归口管理部门。'],['第六条','各生产车间负责本区域污染治理设施的运行维护。']]},
+  {h:'第三章 环境影响评价',arts:[['第八条','建设项目应依法进行环境影响评价，执行《环境影响评价法》规定的"三同时"制度。']]},
+  {h:'第四章 污染防治',arts:[['第十二条','重点水污染物排放单位应按《水污染防治法》要求取得排污许可证。'],['第二十条','危险废物分类收集贮存，执行《固体废物污染环境防治法》。']]},
+  {h:'第五章 宣传与应急',arts:[['第二十八条','每年6月5日世界环境日组织环保宣传教育活动。'],['第三十条','发生环境污染事故时立即启动应急预案。']]}
+ ]},
+ p2:{title:'安全生产责任制度',version:'V4.0',dept:'安全管理部',status:'需修订',basis:['安全生产法','危险化学品安全管理条例'],chapters:[
+  {h:'第一章 总则',arts:[['第一条','为落实安全生产主体责任，根据《中华人民共和国安全生产法》《危险化学品安全管理条例》，制定本制度。'],['第二条','本制度适用于公司各部门、各岗位的安全生产责任落实与考核。']]},
+  {h:'第二章 各级人员职责',arts:[['第四条','公司主要负责人是安全生产第一责任人。'],['第五条','安全环保部负责组织落实安全生产法律法规、开展安全检查和隐患排查。'],['第七条','从业人员有权对安全生产问题提出批评、检举。']]},
+  {h:'第三章 责任考核',arts:[['第十一条','安全生产责任落实情况纳入绩效考核。']]}
+ ]},
+ p3:{title:'危险化学品安全管理制度',version:'V2.5',dept:'安全管理部',status:'需修订',basis:['危险化学品安全管理条例'],chapters:[
+  {h:'第一章 总则',arts:[['第一条','为加强危险化学品安全管理，根据《危险化学品安全管理条例》，制定本制度。'],['第二条','本制度适用于危险化学品采购、储存、使用、运输及废弃处置全过程。']]},
+  {h:'第二章 储存与使用',arts:[['第九条','公司定期开展危险源辨识，建立危险源台账。']]},
+  {h:'第三章 特殊作业',arts:[['第十六条','动火、受限空间等特殊作业实行作业票审批制度。']]},
+  {h:'第四章 重大危险源与应急',arts:[['第二十二条','重大危险源应登记建档，定期检测、评估、监控。']]}
+ ]},
+ p4:{title:'重大危险源管理制度',version:'V3.0',dept:'安全管理部',status:'需修订',basis:['危险化学品安全管理条例','AQ 3035—2010'],chapters:[
+  {h:'第一章 总则',arts:[['第一条','为加强重大危险源安全管理，根据《危险化学品安全管理条例》及AQ 3035—2010，制定本制度。']]},
+  {h:'第二章 辨识与登记',arts:[['第五条','按照GB 18218辨识重大危险源，建立档案并备案。'],['第七条','重大危险源应设置明显的安全警示标志。']]},
+  {h:'第三章 监控与检查',arts:[['第十一条','重大危险源设置温度、压力、液位等监测监控设备。'],['第十五条','每月开展重大危险源隐患排查。']]}
+ ]}
+};
+const POLICIES=[
+ {id:'p1',name:'环境保护管理制度',version:'V3.2',status:'需修订',basis:['环境保护法(已废止)','大气污染防治法(已废止)','水污染防治法(已废止)'],source:'内置文档'},
+ {id:'p2',name:'安全生产责任制度',version:'V4.0',status:'需修订',basis:['安全生产法','危险化学品安全管理条例'],source:'内置文档'},
+ {id:'p3',name:'危险化学品安全管理制度',version:'V2.5',status:'需修订',basis:['危险化学品安全管理条例'],source:'内置文档'},
+ {id:'p4',name:'重大危险源管理制度',version:'V3.0',status:'需修订',basis:['危险化学品安全管理条例','AQ 3035—2010'],source:'内置文档'},
+ {id:'p5',name:'隐患排查治理制度',version:'V3.1',status:'需修订',basis:['安全生产法'],source:'登记项'},
+ {id:'p6',name:'消防安全管理制度',version:'V3.0',status:'合规',basis:['消防法'],source:'登记项'}
+];
+
+/* ============ 修订建议（合并条款级，表格列：原文/建议修改/依据/备注/是否采纳） ============ */
+const REVISIONS=[
+ {id:'v1',policy:'环境保护管理制度',orig:'编制依据为《环境保护法》《大气污染防治法》《水污染防治法》',advice:'删除3部废止法律，编制依据统一改为《中华人民共和国生态环境法典》。',basis:'《生态环境法典》第1242条：上述3部法律已于2026-08-15废止。',note:'高风险 · 需修改',risk:'高',adopt:'未采纳'},
+ {id:'v2',policy:'环境保护管理制度',orig:'第八条：执行《环境影响评价法》规定的"三同时"制度',advice:'依据改为《生态环境法典》，补充"三线一单"生态环境准入要求。',basis:'《生态环境法典》总则编确立环评与"三线一单"制度；环评法已废止。',note:'高风险 · 需修改',risk:'高',adopt:'未采纳'},
+ {id:'v3',policy:'环境保护管理制度',orig:'第十二条：重点水污染物排放单位按《水污染防治法》要求排放',advice:'术语更新为"实行排污许可重点管理的单位"，依据改为《生态环境法典》。',basis:'国务院令第843号将"重点水污染物排放单位"修改为"实行排污许可重点管理的单位"。',note:'中风险 · 需修改',risk:'中',adopt:'未采纳'},
+ {id:'v4',policy:'环境保护管理制度',orig:'第二十条：危险废物执行《固体废物污染环境防治法》',advice:'依据改为《生态环境法典》污染防治编，补充危废跨省转移禁止性要求。',basis:'《固体废物污染环境防治法》已废止，相关内容纳入《生态环境法典》。',note:'中风险 · 需修改',risk:'中',adopt:'未采纳'},
+ {id:'v5',policy:'环境保护管理制度',orig:'第二十八条：每年6月5日世界环境日组织环保宣传',advice:'增加"8月15日全国生态日"主题活动表述。',basis:'《生态环境法典》总则编明确每年8月15日为全国生态日。',note:'低风险 · 建议核实',risk:'低',adopt:'未采纳'},
+ {id:'v6',policy:'安全生产责任制度',orig:'第四条：主要负责人是安全生产第一责任人',advice:'新增"全员安全生产责任制"条款，明确责任穿透到岗位。',basis:'《危险化学品安全法》第七条要求实行全员安全生产责任制。',note:'中风险 · 需新增',risk:'中',adopt:'未采纳'},
+ {id:'v7',policy:'安全生产责任制度',orig:'第五条：安全环保部负责安全检查与隐患排查',advice:'机构名称改为"安全管理部"，与组织架构保持一致。',basis:'公司2026年组织架构调整通知。',note:'高风险 · 需修改',risk:'高',adopt:'未采纳'},
+ {id:'v8',policy:'危险化学品安全管理制度',orig:'第一条：根据《危险化学品安全管理条例》制定',advice:'新增《危险化学品安全法》并置于首位。',basis:'《危险化学品安全法》2026-05-01施行，危化管理升格为法律。',note:'高风险 · 需修改',risk:'高',adopt:'未采纳'},
+ {id:'v9',policy:'危险化学品安全管理制度',orig:'第九条：开展危险源辨识，建立危险源台账',advice:'增设"风险分级管控与隐患排查治理双重预防机制"条款。',basis:'《危险化学品安全法》第八十条要求建立双重预防机制。',note:'中风险 · 需新增',risk:'中',adopt:'未采纳'},
+ {id:'v10',policy:'危险化学品安全管理制度',orig:'第十六条：特殊作业实行作业票审批制度',advice:'核对票证与AQ 3067—2026的53项判定情形衔接。',basis:'AQ 3067—2026将未履行审批列为重大隐患情形。',note:'低风险 · 建议核实',risk:'低',adopt:'未采纳'},
+ {id:'v11',policy:'危险化学品安全管理制度',orig:'第二十二条：重大危险源登记建档、检测评估监控',advice:'新增安全包保责任条款，明确三类责任人。',basis:'AQ 3072—2026要求三类人员包保责任。',note:'中风险 · 需新增',risk:'中',adopt:'未采纳'},
+ {id:'v12',policy:'重大危险源管理制度',orig:'第一条：依据《危险化学品安全管理条例》和AQ 3035—2010',advice:'增补AQ 3072—2026，核对原依据文件有效性。',basis:'AQ 3072—2026 已实施。',note:'中风险 · 建议核实',risk:'中',adopt:'未采纳'},
+ {id:'v13',policy:'重大危险源管理制度',orig:'第七条：无安全包保责任条款',advice:'新增"安全包保责任"专章，明确三类责任人包保要求。',basis:'AQ 3072—2026要求构建三类人员包保责任体系。',note:'高风险 · 需新增',risk:'高',adopt:'未采纳'},
+ {id:'v14',policy:'重大危险源管理制度',orig:'第十五条：每月开展重大危险源隐患排查',advice:'按AQ 3067—2026的53项判定情形重编隐患排查表。',basis:'AQ 3067—2026明确53项重大隐患判定情形。',note:'中风险 · 需修改',risk:'中',adopt:'未采纳'},
+ {id:'v15',policy:'隐患排查治理制度',orig:'第三条：隐患分为一般隐患和重大隐患',advice:'分级框架保留，重大隐患判定按新标准细化。',basis:'AQ 3067—2026（2026-09-30实施）。',note:'低风险 · 保留',risk:'低',adopt:'未采纳'},
+ {id:'v16',policy:'隐患排查治理制度',orig:'第六条：重大隐患参照试行标准20项情形判定',advice:'用AQ 3067—2026的53项情形替换原20项，更新附件清单。',basis:'AQ 3067—2026明确53项判定情形。',note:'高风险 · 需修改',risk:'高',adopt:'未采纳'},
+ {id:'v17',policy:'消防安全管理制度',orig:'第一条：依据《消防法》制定本制度',advice:'依据继续有效，无需修改。',basis:'《消防法》现行有效。',note:'低风险 · 保留',risk:'低',adopt:'未采纳'}
+];
+
+const CONS_DETAIL=[
+ {name:'安全生产责任制度',n:8,st:'未更新',cls:'missed',to:'安全管理部'},
+ {name:'环境保护管理制度',n:5,st:'未更新',cls:'missed',to:'环境管理部'},
+ {name:'危险化学品安全管理制度',n:4,st:'未更新',cls:'missed',to:'安全管理部'},
+ {name:'隐患排查治理制度',n:3,st:'未更新',cls:'missed',to:'安全管理部'},
+ {name:'应急管理制度',n:2,st:'已更新',cls:'changed',to:'安全管理部'},
+ {name:'消防安全管理制度',n:1,st:'已更新',cls:'changed',to:'安全管理部'}
+];
+const TIMELINE=[
+ {date:'2026-11-20',type:'',title:'法规库例行同步',desc:'新增3项强制性行业标准，现行库更新至6部。'},
+ {date:'2026-09-30',type:'orange',title:'3项危化强标实施',desc:'AQ 3067/3072/3026正式实施。'},
+ {date:'2026-08-15',type:'red',title:'生态环境法典施行',desc:'10部法律同时废止，标记3项制度编制依据失效。'},
+ {date:'2026-05-01',type:'green',title:'危险化学品安全法施行',desc:'危化领域首部专门法律生效。'},
+ {date:'2026-03-12',type:'',title:'生态环境法典表决通过',desc:'我国第二部以"法典"命名的法律。'},
+ {date:'2026-01-01',type:'green',title:'生态环境监测条例施行',desc:'国务院令第820号。'}
+];
+
+/* ============ 状态 ============ */
+let regFilter='',polStatus='',revFilter='',revPolicy='';
+const TITLES={dashboard:'工作台',regulations:'法规标准库',policies:'企业制度库',revision:'修订建议',consistency:'一致性校验',updates:'更新动态'};
+function go(p){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById('page-'+p).classList.add('active');document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.page===p));document.getElementById('crumbTitle').textContent=TITLES[p];window.scrollTo({top:0,behavior:'smooth'});}
+document.querySelectorAll('.nav-item').forEach(n=>n.addEventListener('click',()=>go(n.dataset.page)));
+function esc(s){return String(s==null?'':s).replace(/[<>]/g,'');}
+function statusTag(s){const m={'需修订':'t-orange','合规':'t-green'};return `<span class="tag ${m[s]||'t-gray'}"><span class="d"></span>${s}</span>`;}
+function showModal(){document.getElementById('overlay').classList.add('show');}
+function closeModal(){document.getElementById('overlay').classList.remove('show');}
+let toastTimer;
+function toast(m){document.getElementById('toastMsg').textContent=m;document.getElementById('toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>document.getElementById('toast').classList.remove('show'),2600);}
+
+/* ============ 法规库 ============ */
+function setRegFilter(btn,f){document.querySelectorAll('#regulations .filter-tabs button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');regFilter=f;renderRegs();}
+function renderRegs(){
+ const q=(document.getElementById('regSearch').value||'').toLowerCase();
+ const d=document.getElementById('regDomain').value;
+ const list=REGULATIONS.filter(r=>(!q||r.name.toLowerCase().includes(q))&&(!d||r.domain===d)&&(!regFilter||(regFilter==='全文'?r.uploaded:!r.uploaded)));
+ document.getElementById('regBody').innerHTML=list.map(r=>`<tr>
+  <td><div class="td-title">${esc(r.name)}</div><div class="td-sub">${esc(r.note)}</div></td>
+  <td>${r.domain}</td><td>${r.layer}</td><td style="font-size:11.5px">${r.date}</td>
+  <td>${r.uploaded?'<span class="tag t-green"><span class="d"></span>已上传原文</span>':'<span class="tag t-gray"><span class="d"></span>摘要</span>'}</td>
+  <td>${r.uploaded
+    ?`<span class="link-ref" onclick="event.stopPropagation();openRegFull('${r.id}')">在线阅读 →</span>`
+    :`<span class="link-ref" onclick="event.stopPropagation();openRegSummary('${r.id}')">看摘要</span> <span class="link-ref" style="margin-left:8px;color:var(--green)" onclick="event.stopPropagation();uploadReg('${r.id}')">上传文件</span>`}</td></tr>`).join('');
+ document.getElementById('regCount').textContent=`共 ${list.length} 部（2025年以来） · 已上传原文 ${REGULATIONS.filter(r=>r.uploaded).length} 部 · 上传后自动覆盖摘要`;
+}
+function openRegSummary(id){
+ const r=REGULATIONS.find(x=>x.id===id);
+ document.getElementById('modalTitle').textContent=r.name;
+ document.getElementById('modalSub').textContent=r.domain+' · '+r.layer+' · '+r.date;
+ document.getElementById('modalBody').innerHTML=`<div class="info-row"><span class="k">文件层级</span><span class="v">${r.layer}</span></div>
+  <div class="info-row"><span class="k">所属领域</span><span class="v">${r.domain}</span></div>
+  <div class="info-row"><span class="k">施行日期</span><span class="v">${r.date}</span></div>
+  <div class="info-row"><span class="k">内容状态</span><span class="v"><span class="tag t-gray"><span class="d"></span>仅摘要（未上传原文）</span></span></div>
+  <div class="doc-note" style="margin-top:14px"><b>摘要</b><br>${esc(r.summary)}</div>
+  <div style="font-size:12px;color:var(--text-2);margin-top:10px">如需查看完整原文，请上传该法规的官方文件，上传后将自动覆盖摘要并可在线阅读。</div>`;
+ document.getElementById('modalFoot').innerHTML=`<button class="btn primary" onclick="closeModal();uploadReg('${id}')">上传原文</button><button class="btn" onclick="closeModal()">关闭</button>`;
+ showModal();
+}
+function uploadReg(id){
+ const inp=document.createElement('input');inp.type='file';inp.accept='.txt,.md,.html,.htm';
+ inp.onchange=()=>{if(!inp.files.length)return;const f=inp.files[0];const rd=new FileReader();
+  rd.onload=()=>{const r=REGULATIONS.find(x=>x.id===id);r.uploaded=true;r.text=String(rd.result||'');renderRegs();toast(`已上传《${r.name}》原文，覆盖摘要成功`);};
+  rd.readAsText(f,'UTF-8');};
+ inp.click();
+}
+function openRegFull(id){
+ const r=REGULATIONS.find(x=>x.id===id);
+ const ch=parseToChapters(r.text);
+ document.getElementById('modalBox').classList.add('wide');
+ document.getElementById('modalTitle').textContent=r.name+' · 原文';
+ document.getElementById('modalSub').textContent=r.domain+' · '+r.layer+' · '+r.date+' · 已上传原文';
+ const toc=ch.map((c,i)=>`<div class="toc-item ${i===0?'active':''}" onclick="jumpChapter(${i})">${esc(c.h)}</div>`).join('');
+ const body=ch.map((c,i)=>`<div id="chapter-${i}" class="doc-chapter">${esc(c.h)}</div>`+c.arts.map(a=>`<div class="doc-article"><b>${esc(a[0])}</b>　${esc(a[1])}</div>`).join('')).join('');
+ document.getElementById('modalBody').innerHTML=`<div class="reader"><div class="reader-toc"><h4>目录</h4>${toc}</div><div><div class="reader-bar"><span class="title">${esc(r.name)}</span><span class="spacer"></span><span style="font-size:10.5px;color:var(--green)">已上传原文</span></div><div class="reader-body" id="readerBody"><div class="doc-head"><h2>${esc(r.name)}</h2><div class="meta">${esc(r.date)} · 用户上传原文</div></div>${body}</div></div></div>`;
+ document.getElementById('modalFoot').innerHTML=`<button class="btn" onclick="closeModal()">关闭</button>`;
+ showModal();
+}
+function jumpChapter(i){const el=document.getElementById('chapter-'+i);if(el&&document.getElementById('readerBody'))document.getElementById('readerBody').scrollTo({top:el.offsetTop-10,behavior:'smooth'});document.querySelectorAll('.toc-item').forEach((t,j)=>t.classList.toggle('active',j===i));}
+function parseToChapters(text){
+ const lines=String(text||'').split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+ const chapters=[];let cur={h:'正文',arts:[]};
+ lines.forEach(line=>{
+  if(/^第[一二三四五六七八九十百]+[章节篇]/.test(line)){if(cur.arts.length)chapters.push(cur);cur={h:line,arts:[]};}
+  else{const m=line.match(/^(第[一二三四五六七八九十百千零〇两]+条)[\s　]*(.*)$/);if(m)cur.arts.push([m[1],m[2]]);else cur.arts.push(['',line]);}
+ });
+ if(cur.arts.length)chapters.push(cur);
+ return chapters.length?chapters:[{h:'正文',arts:[['',text]]}];
+}
+
+/* ============ 企业制度 ============ */
+function setPolStatus(btn,st){document.querySelectorAll('#policies .filter-tabs button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');polStatus=st;renderPolicies();}
+function renderPolicies(){
+ const q=(document.getElementById('polSearch').value||'').toLowerCase();
+ const list=POLICIES.filter(p=>(!q||p.name.toLowerCase().includes(q))&&(!polStatus||p.status===polStatus));
+ document.getElementById('polBody').innerHTML=list.map(p=>`<tr onclick="openPolicy('${p.id}')">
+  <td><div class="td-title">${esc(p.name)}</div><div class="td-sub">${DOCS[p.id]?DOCS[p.id].dept:'—'}</div></td>
+  <td><span class="tag ${p.source==='本地上传'?'t-blue':'t-gray'}"><span class="d"></span>${esc(p.source)}</span></td>
+  <td>${p.version}</td><td>${statusTag(p.status)}</td>
+  <td style="font-size:11.5px;color:var(--text-2)">${p.basis.join('、')}</td>
+  <td><span class="link-ref">在线阅读 →</span></td></tr>`).join('');
+ document.getElementById('statPolicy').textContent=POLICIES.length;
+ document.getElementById('navPolicyBadge').textContent=POLICIES.length;
+}
+function openPolicy(id){
+ const p=POLICIES.find(x=>x.id===id);const doc=DOCS[id];
+ if(!doc){toast('该制度为登记项，请上传正文文件');return;}
+ document.getElementById('modalBox').classList.add('wide');
+ document.getElementById('modalTitle').textContent=p.name;
+ document.getElementById('modalSub').textContent=p.source+' · '+p.version+' · '+doc.dept;
+ const toc=doc.chapters.map((c,i)=>`<div class="toc-item ${i===0?'active':''}" onclick="jumpChapter(${i})">${esc(c.h)}</div>`).join('');
+ const body=doc.chapters.map((c,i)=>`<div id="chapter-${i}" class="doc-chapter">${esc(c.h)}</div>`+c.arts.map(a=>`<div class="doc-article"><b>${esc(a[0])}</b>　${esc(a[1])}</div>`).join('')).join('');
+ document.getElementById('modalBody').innerHTML=`<div class="reader"><div class="reader-toc"><h4>目录</h4><div style="font-size:11px;color:var(--text-2);margin-bottom:8px;padding:0 8px"><b>${esc(doc.title)}</b><br>版本 ${esc(doc.version)}</div>${toc}</div><div><div class="reader-bar"><span class="title">${esc(doc.title)}</span><span class="spacer"></span>${statusTag(p.status)}</div><div class="reader-body" id="readerBody"><div class="doc-head"><h2>${esc(doc.title)}</h2><div class="meta">版本 ${esc(doc.version)} · 责任部门 ${esc(doc.dept)}</div></div>${body}</div></div></div>`;
+ document.getElementById('modalFoot').innerHTML=`<button class="btn" onclick="closeModal();go('revision')">查看修订建议</button><button class="btn primary" onclick="closeModal()">关闭</button>`;
+ showModal();
+}
+function handlePolicyFiles(files){
+ if(!files||!files.length)return;let n=0;
+ Array.from(files).forEach(f=>{const rd=new FileReader();rd.onload=()=>{
+  const text=String(rd.result||'');const name=f.name.replace(/\.(txt|md|html?)$/i,'');const id='up'+Date.now()+'_'+n;
+  const ch=parseToChapters(text);
+  POLICIES.unshift({id,name,version:'V1.0',status:'待检查',basis:['待系统解析'],source:'本地上传'});
+  DOCS[id]={title:name,version:'V1.0',dept:'待分配',status:'待检查',basis:['待系统解析'],chapters:ch};
+  n++;renderPolicies();if(n===files.length)toast(`已上传 ${n} 份制度文件`);
+ };rd.readAsText(f,'UTF-8');});
+}
+(function(){const z=document.getElementById('polUploadZone');z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('drag')});z.addEventListener('dragleave',()=>z.classList.remove('drag'));z.addEventListener('drop',e=>{e.preventDefault();z.classList.remove('drag');handlePolicyFiles(e.dataTransfer.files)});})();
+
+/* ============ 修订建议表格 ============ */
+function initRevFilters(){
+ const sel=document.getElementById('revPolicy');
+ const names=[...new Set(REVISIONS.map(r=>r.policy))];
+ sel.innerHTML='<option value="">全部制度</option>'+names.map(n=>`<option>${n}</option>`).join('');
+}
+function setRevFilter(btn,a){document.querySelectorAll('#revision .filter-tabs button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');revFilter=a;renderRevision();}
+function renderRevision(){
+ const q=(document.getElementById('revSearch').value||'').toLowerCase();
+ revPolicy=document.getElementById('revPolicy').value;
+ const list=REVISIONS.filter(r=>(!q||r.orig.toLowerCase().includes(q)||r.advice.toLowerCase().includes(q)||r.basis.toLowerCase().includes(q))&&(!revPolicy||r.policy===revPolicy)&&(!revFilter||r.adopt===revFilter));
+ const adoptBtn=(r,val,label,cls)=>`<button class="btn sm ${r.adopt===val?cls:''}" style="${r.adopt===val?'background:'+ (val==='已采纳'?'var(--green)':val==='已忽略'?'#94a3b8':'') +';color:#fff;border-color:transparent':''}" onclick="setAdopt('${r.id}','${val}')">${label}</button>`;
+ document.getElementById('revBody').innerHTML=list.map(r=>`<tr>
+  <td style="font-size:11.5px;color:var(--text-2);white-space:nowrap">${esc(r.policy)}</td>
+  <td style="font-size:11.5px;line-height:1.6">${esc(r.orig)}</td>
+  <td style="font-size:11.5px;line-height:1.6;color:var(--primary-d)">${esc(r.advice)}</td>
+  <td style="font-size:11px;line-height:1.6;color:var(--text-2)">${esc(r.basis)}</td>
+  <td><span class="term-badge ${r.note.split(' · ')[1]||''}">${esc(r.note.split(' · ')[0])}</span></td>
+  <td style="white-space:nowrap"><div style="display:flex;gap:3px;flex-direction:column;align-items:stretch">
+   ${adoptBtn(r,'已采纳','采纳','')}${adoptBtn(r,'已忽略','忽略','')}</div></td></tr>`).join('');
+ const pending=REVISIONS.filter(r=>r.adopt==='未采纳').length;
+ const adopted=REVISIONS.filter(r=>r.adopt==='已采纳').length;
+ document.getElementById('revCount').textContent=`共 ${REVISIONS.length} 条 · 未采纳 ${pending} 条 · 已采纳 ${adopted} 条`;
+ document.getElementById('navRevBadge').textContent=pending;
+ document.getElementById('statPending').textContent=pending;
+ document.getElementById('statAdopted').textContent=adopted;
+}
+function setAdopt(id,val){const r=REVISIONS.find(x=>x.id===id);r.adopt=r.adopt===val?'未采纳':val;renderRevision();toast(`已${val==='已采纳'?'采纳':val==='已忽略'?'忽略':'重置'}建议 ${id.toUpperCase()}`);}
+
+/* ============ 一致性 ============ */
+function renderConsistency(){
+ const flow=CONS_DETAIL.map(d=>`<div style="padding:8px 12px;border-radius:7px;border:1.5px solid ${d.cls==='missed'?'var(--red)':'var(--green)'};background:${d.cls==='missed'?'var(--red-l)':'var(--green-l)'}"><div style="font-size:11.5px;font-weight:700">${d.name}</div><div style="font-size:10.5px;color:var(--text-2);margin-top:2px">"安全环保部"出现 <b>${d.n}</b> 处 · 应改为"${d.to}"</div></div>`).join('');
+ document.getElementById('consFlow').innerHTML=flow;
+ document.getElementById('consDetail').innerHTML=CONS_DETAIL.map(d=>`<div class="term-card" style="border:1px solid var(--border)">
+  <div class="ti" style="background:${d.cls==='missed'?'var(--red-l)':'var(--green-l)'};color:${d.cls==='missed'?'var(--red)':'var(--green)'}">${d.cls==='missed'?'!':'✓'}</div>
+  <div style="flex:1"><h4>${d.name}</h4><p>"安全环保部"出现 <b>${d.n}</b> 处 · 应改为"${d.to}"</p></div>
+  <span class="tag ${d.cls==='missed'?'t-red':'t-green'}" style="height:fit-content"><span class="d"></span>${d.st}</span></div>`).join('');
+}
+
+/* ============ 时间线 ============ */
+function renderTimelines(){
+ const make=l=>l.map(t=>`<div class="tl ${t.type}"><div class="dot"></div><div class="date">${t.date}</div><div class="body"><b>${t.title}</b><p>${t.desc}</p></div></div>`).join('');
+ document.getElementById('fullTimeline').innerHTML=make(TIMELINE);
+ document.getElementById('dashTimeline').innerHTML=make(TIMELINE.slice(0,5));
+}
+
+/* ============ 对话问答（智能引擎） ============ */
+const CHAT_SUGGEST=['环境保护法废止后，哪些制度需要修订？','危险化学品安全法有哪些新要求？','AQ 3067 涉及哪些制度？','公司机构调整影响了哪些制度？','排污许可术语要怎么改？'];
+const CHAT_HISTORY=[];   // 对话历史（用于上下文）
+function initChat(){
+ document.getElementById('chatMsgs').innerHTML=`<div class="chat-msg bot"><div class="av">助</div><div class="bub">您好，我是制度修订助手。可以问我关于法规更新、制度修订、依据变更、术语调整等问题。<span class="src">已加载法规库 6 部、企业制度 6 项、修订建议 ${REVISIONS.length} 条</span></div></div>`;
+ document.getElementById('chatSuggest').innerHTML=CHAT_SUGGEST.map(s=>`<span class="chip" onclick="askChat('${s}')">${s}</span>`).join('');
+}
+function sendChat(){const i=document.getElementById('chatInput');const q=i.value.trim();if(!q)return;i.value='';askChat(q);}
+function askChat(q){
+ const box=document.getElementById('chatMsgs');
+ box.insertAdjacentHTML('beforeend',`<div class="chat-msg user"><div class="av">我</div><div class="bub">${esc(q)}</div></div>`);
+ box.insertAdjacentHTML('beforeend',`<div class="chat-msg bot"><div class="av">助</div><div class="bub">正在检索…</div></div>`);
+ box.scrollTop=box.scrollHeight;
+ setTimeout(()=>{const last=box.querySelector('.chat-msg.bot:last-child .bub');const a=answer(q);if(last)last.innerHTML=a;box.scrollTop=box.scrollHeight;},420);
+}
+
+/* 归一化：去空格、全角转半角 */
+function norm(s){return String(s||'').toLowerCase().replace(/\s+/g,'').replace(/[，。！？、；：""''（）【】]/g,'');}
+/* 关键词命中 */
+function hit(q,kws){return kws.some(k=>q.includes(k));}
+/* 制度名 -> 命中列表 */
+function matchPolicies(q){
+ return REVISIONS.filter(r=>norm(r.policy).includes(q)||q.includes(norm(r.policy).replace(/管理制度/g,''))||q.includes(norm(r.policy)));
+}
+/* 法规实体识别 */
+function matchReg(q){
+ const map=[
+  ['生态环境法典',['生态环境法典','法典','生态法典']],
+  ['危险化学品安全法',['危险化学品安全法','危化安全法','危化法']],
+  ['AQ 3067—2026',['aq3067','3067','重大隐患','隐患判定','重大生产安全事故隐患']],
+  ['AQ 3072—2026',['aq3072','3072','包保','安全包保','重大危险源']],
+  ['AQ 3026—2026',['aq3026','3026','设备检修','检修作业']],
+  ['生态环境监测条例',['生态环境监测条例','监测条例']]
+ ];
+ for(const [name,kws] of map){if(hit(q,kws))return name;}
+ return null;
+}
+/* 规则知识库 */
+const KB=[
+ {kws:['废止','作废','失效','环境保护法','大气污染防治法','水污染防治法','固废法','环评法','10部','十部'],fn:(q)=>{
+  const list=REVISIONS.filter(r=>r.basis.includes('废止')||r.basis.includes('1242')||r.note.includes('需修改'));
+  const names=[...new Set(list.map(r=>r.policy))];
+  return `《生态环境法典》第1242条明确：自2026-08-15起，《环境保护法》《大气污染防治法》《水污染防治法》等10部法律同时废止。受影响的制度有：<b>${names.join('、')}</b>，共 ${list.length} 条修订建议已生成。<span class="src">依据：《生态环境法典》第1242条（主席令第70号）</span>`;
+ }},
+ {kws:['危化','危险化学品','全员责任','双重预防'],fn:(q)=>{
+  const list=REVISIONS.filter(r=>r.policy.includes('危化')||r.policy.includes('重大危险源'));
+  return `《危险化学品安全法》2026-05-01 施行，共10章127条，是危化领域首部专门法律，核心新要求：<br>① 全员安全生产责任制；② 风险分级管控与隐患排查治理双重预防机制；③ 重大危险源安全包保责任（三类人员）。<br>涉及制度：${[...new Set(list.map(r=>r.policy))].join('、')}。<span class="src">依据：《危险化学品安全法》第5、7、41、80条</span>`;
+ }},
+ {kws:['3067','重大隐患','隐患判定','53项'],fn:(q)=>{
+  const list=REVISIONS.filter(r=>r.basis.includes('AQ 3067'));
+  return `AQ 3067—2026《重大生产安全事故隐患判定准则》2026-09-30 实施，由规范性文件上升为强制性标准，明确53项重大隐患判定情形。涉及制度：${[...new Set(list.map(r=>r.policy))].join('、')}。<span class="src">依据：应急管理部 AQ 3067—2026</span>`;
+ }},
+ {kws:['3072','包保','重大危险源'],fn:(q)=>{
+  const list=REVISIONS.filter(r=>r.basis.includes('AQ 3072'));
+  return `AQ 3072—2026《危险化学品重大危险源安全包保责任管理要求》要求建立主要负责人、技术负责人、操作负责人三类人员包保责任体系。涉及制度：${[...new Set(list.map(r=>r.policy))].join('、')}。<span class="src">依据：应急管理部 AQ 3072—2026</span>`;
+ }},
+ {kws:['3026','设备检修','检修作业'],fn:(q)=>{
+  return `AQ 3026—2026《化工企业设备检修作业安全规范》2026-09-30 实施，替代2008版，突出待检修设备交出、检修过程、验收交付三环节。涉及制度：设备检修作业安全管理制度。<span class="src">依据：应急管理部 AQ 3026—2026</span>`;
+ }},
+ {kws:['机构','部门','安全环保部','组织架构','更名'],fn:(q)=>{
+  const missed=CONS_DETAIL.filter(d=>d.cls==='missed');
+  return `公司2026年撤销"安全环保部"，分设"安全管理部"与"环境管理部"。系统扫描发现 6 项制度共 23 处引用旧机构名称，其中 ${missed.length} 项未联动更新：${missed.map(d=>d.name+'（'+d.n+'处，改为'+d.to+'）').join('、')}。<span class="src">依据：公司2026年组织架构调整通知</span>`;
+ }},
+ {kws:['排污','术语','重点水污染物','许可'],fn:(q)=>{
+  return `国务院令第843号（2026-08-15施行）已将"重点水污染物排放单位"统一修改为"实行排污许可重点管理的单位"。企业相关制度中该术语需同步更新。<span class="src">依据：国务院令第843号附件1</span>`;
+ }},
+ {kws:['生态日','三线一单','生态环境法典','法典'],fn:(q)=>{
+  return `《生态环境法典》是我国第二部以"法典"命名的法律，共5编1242条，2026-08-15施行。要点：①确立"三线一单"分区管控；②环评、排污许可法定化；③每年8月15日为全国生态日；④废止10部旧法。<span class="src">依据：主席令第70号</span>`;
+ }}
+];
+
+function answer(q){
+ const nq=norm(q);CHAT_HISTORY.push(q);
+ // 1) 精确制度名优先
+ const pol=matchPolicies(nq);
+ if(pol.length&&(nq.includes('修订')||nq.includes('改')||nq.includes('依据')||nq.includes('问题')||nq.includes('哪些'))){
+  const items=REVISIONS.filter(r=>pol.some(p=>p.policy===r.policy)&&r.adopt==='未采纳');
+  if(items.length){
+   const top=items.slice(0,4).map(r=>`· <b>${r.orig.slice(0,28)}</b> → ${r.advice.slice(0,30)}`);
+   return `「${pol[0].policy}」共 ${items.length} 条未采纳修订建议，前 ${top.length} 条：<br>${top.join('<br>')}<br>完整清单见"修订建议"表格。<span class="src">依据：见各条建议附带的法规依据</span>`;
+  }
+ }
+ // 2) 法规实体
+ const reg=matchReg(nq);
+ if(reg){
+  const k=KB.find(x=>hit(nq,x.kws));
+  if(k)return k.fn(q);
+ }
+ // 3) 规则知识库
+ for(const k of KB){if(hit(nq,k.kws))return k.fn(q);}
+ // 4) 统计查询
+ if(hit(nq,['多少','几条','数量','统计','进度','待处理','未采纳'])){
+  const pending=REVISIONS.filter(r=>r.adopt==='未采纳').length;
+  const high=REVISIONS.filter(r=>r.adopt==='未采纳'&&r.risk==='高').length;
+  const adopted=REVISIONS.filter(r=>r.adopt==='已采纳').length;
+  return `修订建议共 ${REVISIONS.length} 条：未采纳 <b>${pending}</b> 条（其中高风险 ${high} 条）、已采纳 ${adopted} 条。涉及 ${new Set(REVISIONS.map(r=>r.policy)).size} 项制度。`;
+ }
+ // 5) 制度清单
+ if(hit(nq,['哪些制度','制度有哪些','制度库','企业制度','全部制度'])){
+  return `当前企业制度库共 ${POLICIES.length} 项：${POLICIES.map(p=>p.name).join('、')}。其中需修订 ${POLICIES.filter(p=>p.status==='需修订').length} 项。`;
+ }
+ // 6) 法规库清单
+ if(hit(nq,['哪些法规','法规有哪些','法规库','法规标准','现行法规'])){
+  return `当前法规标准库共 ${REGULATIONS.length} 部（2025年以来）：${REGULATIONS.map(r=>r.name.replace(/（.*/,'')).join('、')}。`;
+ }
+ // 兜底
+ const names=[...new Set(REVISIONS.map(r=>r.policy))];
+ return `抱歉，我暂时没有覆盖这个问题。您可以尝试：<br>· 问某部法规的新要求（如"危险化学品安全法有哪些新要求"）<br>· 问哪些制度需要修订<br>· 问某个标准涉及哪些制度（如"AQ 3067 涉及哪些制度"）<br>· 问术语或机构调整<br>当前制度库：${names.join('、')}。<span class="src">提示：换个说法试试</span>`;
+}
+
+/* ============ 初始化 ============ */
+renderRegs();renderPolicies();renderRevision();renderConsistency();renderTimelines();initChat();initRevFilters();
+</script>
+</body>
+</html>
